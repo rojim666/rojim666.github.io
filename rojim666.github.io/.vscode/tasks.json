@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "optimize-banner",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/optimize_banner.py"
+			],
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}
