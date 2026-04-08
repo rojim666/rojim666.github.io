@@ -322,6 +322,32 @@
             z-index: 1;
         }
 
+        .sprite-card--rolling {
+            opacity: 1;
+            animation: cardRolling 0.35s linear infinite;
+        }
+
+        .sprite-card--rolling .sprite-image {
+            background: linear-gradient(90deg, #eceff3 0%, #f7f8fa 45%, #eceff3 100%);
+            background-size: 220% 100%;
+            animation: shimmer 0.9s linear infinite;
+        }
+
+        .sprite-card--rolling .sprite-name {
+            letter-spacing: 1px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 220% 0; }
+            100% { background-position: -220% 0; }
+        }
+
+        @keyframes cardRolling {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+            100% { transform: translateY(0); }
+        }
+
         .sprite-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 12px 32px rgba(0,0,0,0.25);
@@ -456,6 +482,20 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            border-color: #d9dee4;
+            background: #ffffff;
+        }
+
+        .history-item.selected {
+            border-color: #353535;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         .history-time {
@@ -711,6 +751,7 @@
     { name: '九幽菇', image: 'images/九幽菇.png' },
     { name: '仪式巨像', image: 'images/仪式巨像.png' },
     { name: '伊兰亚龙', image: 'images/伊兰亚龙.png' },
+    { name: '伊贝儿', image: 'images/伊贝儿.png' },
     { name: '伊贝粉粉', image: 'images/伊贝粉粉.png' },
     { name: '公平鸽', image: 'images/公平鸽.png' },
     { name: '兽花蕾', image: 'images/兽花蕾.png' },
@@ -754,7 +795,6 @@
     { name: '幻灵菇', image: 'images/幻灵菇.png' },
     { name: '幽冥眼', image: 'images/幽冥眼.png' },
     { name: '幽影树', image: 'images/幽影树.png' },
-    { name: '彩虹独角兽', image: 'images/彩虹独角兽.png' },
     { name: '彩蝶鲨', image: 'images/彩蝶鲨.png' },
     { name: '影狸', image: 'images/影狸.png' },
     { name: '怒目怂猫', image: 'images/怒目怂猫.png' },
@@ -902,6 +942,7 @@
         const spritePool = normalizeSprites(sprites);
 
         let history = JSON.parse(localStorage.getItem('drawHistory') || '[]');
+        let selectedHistoryIndex = null;
         let userData = JSON.parse(localStorage.getItem('userData') || JSON.stringify({
             name: '训练家',
             level: 1,
@@ -1068,18 +1109,19 @@
         // 渲染历史
         function renderHistory() {
             const historyList = document.getElementById('historyList');
-            const emptyHistory = document.getElementById('emptyHistory');
             
             if (!Array.isArray(history) || history.length === 0) {
-                emptyHistory.style.display = 'block';
-                historyList.innerHTML = '';
-                historyList.appendChild(emptyHistory);
+                selectedHistoryIndex = null;
+                historyList.innerHTML = '<div class="empty-state" id="emptyHistory">还没有抽签记录</div>';
                 return;
             }
 
-            emptyHistory.style.display = 'none';
+            if (selectedHistoryIndex !== null && (selectedHistoryIndex < 0 || selectedHistoryIndex >= history.length)) {
+                selectedHistoryIndex = null;
+            }
+
             historyList.innerHTML = history.map((item, index) => `
-                <div class="history-item">
+                <div class="history-item ${selectedHistoryIndex === index ? 'selected' : ''}" data-history-index="${index}">
                     <div class="history-time">${item?.time || '未知时间'}</div>
                     <div class="history-sprites">
                         ${normalizeTeamNames(item?.team).map(sprite => `<div class="history-sprite">${sprite || '未知精灵'}</div>`).join('') || '<div class="history-sprite">未知精灵</div>'}
@@ -1088,8 +1130,72 @@
             `).join('');
         }
 
+        function renderTeamFromNames(teamNames) {
+            const container = document.getElementById('teamContainer');
+            const names = normalizeTeamNames(teamNames).slice(0, 6);
+
+            if (names.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>点击下方按钮开始抽签</p></div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            names.forEach((name, i) => {
+                const matched = spritePool.find(s => s.name === name) || { name, image: '' };
+                const spriteImage = getSpriteDisplayImage(matched);
+                const card = document.createElement('div');
+                card.className = 'sprite-card';
+                card.style.animationDelay = `${i * 0.06}s`;
+                card.innerHTML = `
+                    <div class="sprite-image">
+                        <img src="${spriteImage}" alt="${matched.name}" loading="lazy" decoding="async" onerror="this.replaceWith(createSpriteFallbackSvg())">
+                    </div>
+                    <div class="sprite-name">${matched.name}</div>
+                    <div class="sprite-index">第 ${i + 1} 位</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectHistory(index) {
+            if (!Array.isArray(history) || index < 0 || index >= history.length) return;
+            selectedHistoryIndex = index;
+            renderHistory();
+            renderTeamFromNames(history[index]?.team || []);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function createRollingCard(index) {
+            const card = document.createElement('div');
+            card.className = 'sprite-card sprite-card--rolling';
+            card.innerHTML = `
+                <div class="sprite-image">${createSpriteFallbackSvg().outerHTML}</div>
+                <div class="sprite-name">载入中</div>
+                <div class="sprite-index">准备第 ${index + 1} 位</div>
+            `;
+            return card;
+        }
+
+        function revealSpriteCard(card, sprite, index) {
+            const spriteImage = getSpriteDisplayImage(sprite);
+            card.classList.remove('sprite-card--rolling');
+            card.style.animation = 'none';
+            card.innerHTML = `
+                <div class="sprite-image">
+                    <img src="${spriteImage}" alt="${sprite.name}" loading="lazy" decoding="async" onerror="this.replaceWith(createSpriteFallbackSvg())">
+                </div>
+                <div class="sprite-name">${sprite.name}</div>
+                <div class="sprite-index">第 ${index + 1} 位</div>
+            `;
+            card.offsetHeight;
+            card.style.animation = `fadeIn 0.35s ease forwards`;
+        }
+
         // 抽签
-        function drawTeam() {
+        async function drawTeam() {
             const btn = document.getElementById('drawBtn');
             const container = document.getElementById('teamContainer');
             
@@ -1107,6 +1213,13 @@
             btn.innerHTML = `<span class="ui-icon button-icon" aria-hidden="true">${iconSvg('draw')}</span><span>抽签中...</span>`;
             container.innerHTML = '';
 
+            const rollingCards = [];
+            for (let i = 0; i < 6; i++) {
+                const rollingCard = createRollingCard(i);
+                rollingCards.push(rollingCard);
+                container.appendChild(rollingCard);
+            }
+
             // 随机选6个不重复的精灵
             const selected = [];
             const temp = [...spritePool];
@@ -1116,23 +1229,23 @@
                 temp.splice(randomIndex, 1);
             }
 
-            // 直接显示所有精灵
-            selected.forEach((sprite, i) => {
-                const card = document.createElement('div');
-                card.className = 'sprite-card';
-                card.style.animationDelay = `${i * 0.1}s`;
-                const spriteImage = getSpriteDisplayImage(sprite);
-                
-                card.innerHTML = `
-                    <div class="sprite-image">
-                        <img src="${spriteImage}" alt="${sprite.name}" onerror="this.replaceWith(createSpriteFallbackSvg())">
-                    </div>
-                    <div class="sprite-name">${sprite.name}</div>
-                    <div class="sprite-index">第 ${i+1} 位</div>
-                `;
-                
-                container.appendChild(card);
-            });
+            const rollingTimer = setInterval(() => {
+                rollingCards.forEach((card, i) => {
+                    const randomName = spritePool[Math.floor(Math.random() * spritePool.length)]?.name || '载入中';
+                    const nameEl = card.querySelector('.sprite-name');
+                    const idxEl = card.querySelector('.sprite-index');
+                    if (nameEl) nameEl.textContent = randomName;
+                    if (idxEl) idxEl.textContent = `滚动第 ${i + 1} 位`;
+                });
+            }, 70);
+
+            await sleep(520);
+            clearInterval(rollingTimer);
+
+            for (let i = 0; i < selected.length; i++) {
+                revealSpriteCard(rollingCards[i], selected[i], i);
+                await sleep(120);
+            }
 
             // 恢复按钮
             btn.disabled = false;
@@ -1168,6 +1281,7 @@
         function clearHistory() {
             if (confirm('确定要清空所有抽签历史吗？')) {
                 history = [];
+                selectedHistoryIndex = null;
                 localStorage.removeItem('drawHistory');
                 renderHistory();
             }
@@ -1176,6 +1290,14 @@
         // 初始化
         updateUserUI();
         renderHistory();
+
+        document.getElementById('historyList').addEventListener('click', (e) => {
+            const item = e.target.closest('.history-item');
+            if (!item) return;
+            const idx = Number(item.dataset.historyIndex);
+            if (Number.isNaN(idx)) return;
+            selectHistory(idx);
+        });
 
         function createSpriteFallbackSvg() {
             const wrapper = document.createElement('div');
