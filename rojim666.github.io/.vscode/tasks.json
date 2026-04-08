@@ -10,6 +10,13 @@
 			],
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "optimize-banner",
+			"type": "shell",
+			"command": "python tools/optimize_banner.py",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }
