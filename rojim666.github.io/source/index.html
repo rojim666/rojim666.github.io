@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="洛克配队抽签">
+    <title>洛克王国随机配队</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+            position: relative;
+        }
+
+        .header-content {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #333 0%, #666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .ui-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            line-height: 0;
+        }
+
+        .ui-icon svg {
+            display: block;
+            width: 1em;
+            height: 1em;
+            fill: currentColor;
+        }
+
+        .user-avatar .ui-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .user-avatar-large .ui-icon svg {
+            width: 34px;
+            height: 34px;
+        }
+
+        .menu-icon {
+            width: 18px;
+            height: 18px;
+            color: currentColor;
+        }
+
+        .title-icon {
+            width: 1.15em;
+            height: 1.15em;
+            margin-right: 0.35em;
+            vertical-align: -0.18em;
+            color: #444;
+        }
+
+        .button-icon {
+            width: 1em;
+            height: 1em;
+            margin-right: 0.45em;
+            color: currentColor;
+        }
+
+        .history-icon {
+            width: 1em;
+            height: 1em;
+            margin-right: 0.35em;
+            color: currentColor;
+            vertical-align: -0.12em;
+        }
+
+        .user-avatar:hover {
+            background: #f8f9fa;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: white;
+            border-radius: 16px;
+            min-width: 220px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideDown 0.3s ease forwards;
+            opacity: 0;
+            transform: translateY(-10px);
+            display: none;
+        }
+
+        @keyframes slideDown {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-info {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .user-avatar-large {
+            width: 70px;
+            height: 70px;
+            background: #333;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .user-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .user-level {
+            font-size: 0.85rem;
+            color: #666;
+            background: #f0f0f0;
+            padding: 3px 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .user-stats {
+            padding: 15px 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .menu-list {
+            padding: 10px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .menu-item.logout {
+            color: #ff6b6b;
+        }
+
+        .menu-item.logout:hover {
+            background: #fff5f5;
+        }
+
+        .team-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+            min-height: 300px;
+        }
+
+        .sprite-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .sprite-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sprite-image {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #999;
+            overflow: hidden;
+        }
+
+        .sprite-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .sprite-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .sprite-index {
+            font-size: 0.9rem;
+            color: #666;
+            background: #f0f0f0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .button-area {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .draw-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 18px 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .draw-btn:hover {
+            transform: translateY(-2px);
+            background: #444;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .draw-btn:active {
+            transform: translateY(0);
+        }
+
+        .draw-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .history-area {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .history-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .clear-history {
+            background: white;
+            color: #ff6b6b;
+            border: 2px solid #ff6b6b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .clear-history:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .history-time {
+            color: #666;
+            font-size: 0.9rem;
+            min-width: 100px;
+        }
+
+        .history-sprites {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .history-sprite {
+            background: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #333;
+            border: 2px solid #e9ecef;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            header {
+                margin-bottom: 30px;
+            }
+
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .user-dropdown {
+                right: -10px;
+                min-width: 200px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-top: 20px;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .team-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin-bottom: 30px;
+            }
+
+            .sprite-card {
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .sprite-image {
+                width: 70px;
+                height: 70px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                font-size: 2rem;
+            }
+
+            .sprite-name {
+                font-size: 0.95rem;
+                margin-bottom: 5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .sprite-index {
+                font-size: 0.75rem;
+                padding: 3px 8px;
+            }
+
+            .draw-btn {
+                padding: 14px 40px;
+                font-size: 1.1rem;
+                width: 90%;
+                max-width: 300px;
+            }
+
+            .history-area {
+                padding: 20px;
+            }
+
+            .history-title {
+                font-size: 1.2rem;
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .clear-history {
+                align-self: flex-end;
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .history-time {
+                font-size: 0.8rem;
+                min-width: auto;
+                color: #999;
+            }
+
+            .history-sprites {
+                justify-content: flex-start;
+            }
+
+            .history-sprite {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .team-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .sprite-image {
+                width: 80px;
+                height: 80px;
+            }
+
+            .sprite-name {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="user-menu">
+                <div class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">
+                    <span class="ui-icon" aria-hidden="true">%USER_ICON%</span>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-info">
+                        <div class="user-avatar-large">
+                            <span class="ui-icon" aria-hidden="true">%GAMEPAD_ICON%</span>
+                        </div>
+                        <div class="user-name" id="userName">训练家</div>
+                        <div class="user-level" id="userLevel">Lv.1 新手训练家</div>
+                    </div>
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalDraws">0</div>
+                            <div class="stat-label">总抽签次数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="winRate">0%</div>
+                            <div class="stat-label">胜率</div>
+                        </div>
+                    </div>
+                    <div class="menu-list">
+                        <div class="menu-item" onclick="editProfile()">
+                            <span class="ui-icon menu-icon" aria-hidden="true">%EDIT_ICON%</span>
+                            <span>编辑资料</span>
+                        </div>
+                        <div class="menu-item" onclick="exportData()">
+                            <span class="ui-icon menu-icon" aria-hidden="true">%EXPORT_ICON%</span>
+                            <span>导出数据</span>
+                        </div>
+                        <div class="menu-item" onclick="importData()">
+                            <span class="ui-icon menu-icon" aria-hidden="true">%IMPORT_ICON%</span>
+                            <span>导入数据</span>
+                        </div>
+                        <div class="menu-item" onclick="resetData()">
+                            <span class="ui-icon menu-icon" aria-hidden="true">%RESET_ICON%</span>
+                            <span>重置所有数据</span>
+                        </div>
+                        <div class="menu-item logout" onclick="logout()">
+                            <span class="ui-icon menu-icon" aria-hidden="true">%LOGOUT_ICON%</span>
+                            <span>退出登录</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header-content">
+                <h1><span class="ui-icon title-icon" aria-hidden="true">%TITLE_ICON%</span>洛克王国随机配队抽签</h1>
+                <p class="subtitle">点击下方按钮，随机抽取6只精灵组成你的战斗队伍！</p>
+            </div>
+        </header>
+
+        <div class="team-container" id="teamContainer">
+            <div class="empty-state">
+                <p>点击下方按钮开始抽签</p>
+            </div>
+        </div>
+
+        <div class="button-area">
+            <button class="draw-btn" id="drawBtn" onclick="drawTeam()">
+                <span class="ui-icon button-icon" aria-hidden="true">%DRAW_ICON%</span>
+                <span>开始抽签</span>
+            </button>
+        </div>
+
+        <div class="history-area">
+            <div class="history-title">
+                <span><span class="ui-icon history-icon" aria-hidden="true">%HISTORY_ICON%</span>抽签历史</span>
+                <button class="clear-history" onclick="clearHistory()">清空历史</button>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="empty-state" id="emptyHistory">
+                    还没有抽签记录
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 精灵列表
+        const sprites = [
+    { name: '一窝蜂', image: '' },
+    { name: '上岸蛙', image: '' },
+    { name: '丢丢', image: '' },
+    { name: '乌拉塔', image: '' },
+    { name: '乌达', image: '' },
+    { name: '乖乖鹄', image: '' },
+    { name: '九尾狐', image: '' },
+    { name: '九幽菇', image: '' },
+    { name: '书卷守护', image: '' },
+    { name: '书魔虫', image: '' },
+    { name: '仪使者', image: '' },
+    { name: '仪式之星', image: '' },
+    { name: '仪式巨像', image: '' },
+    { name: '伊兰亚龙', image: '' },
+    { name: '伊兰龙', image: '' },
+    { name: '伊贝儿', image: '' },
+    { name: '伊贝粉粉', image: '' },
+    { name: '伊雷龙', image: '' },
+    { name: '伏地兽', image: '' },
+    { name: '优优', image: '' },
+    { name: '光纤兽', image: '' },
+    { name: '公平鸽', image: '' },
+    { name: '兽花蕾', image: '' },
+    { name: '冬羽雀', image: '' },
+    { name: '冰封怨灵', image: '' },
+    { name: '冰钻布鲁斯', image: '' },
+    { name: '利灯鱼', image: '' },
+    { name: '刺电环', image: '' },
+    { name: '刺盔虫', image: '' },
+    { name: '刺轮砣', image: '' },
+    { name: '动力猿', image: '' },
+    { name: '化蝶', image: '' },
+    { name: '千棘海针', image: '' },
+    { name: '千棘盔', image: '' },
+    { name: '卡卡虫', image: '' },
+    { name: '卡洛儿', image: '' },
+    { name: '卡瓦重', image: '' },
+    { name: '卷毛鸭', image: '' },
+    { name: '卷胡巨獭', image: '' },
+    { name: '厉毒修萝', image: '' },
+    { name: '厉毒小萝', image: '' },
+    { name: '双灯鱼', image: '' },
+    { name: '古卷匣魔像', image: '' },
+    { name: '古卷执政官', image: '' },
+    { name: '古啦多', image: '' },
+    { name: '古钟蛇', image: '' },
+    { name: '叮叮恶魔', image: '' },
+    { name: '可爱猿', image: '' },
+    { name: '可立鸡', image: '' },
+    { name: '叶冕魔力猫', image: '' },
+    { name: '号儿鱼', image: '' },
+    { name: '吸泥鸥', image: '' },
+    { name: '呆小路', image: '' },
+    { name: '呼呼猪', image: '' },
+    { name: '咔咔壳', image: '' },
+    { name: '咔咔羽毛', image: '' },
+    { name: '咔咔雀', image: '' },
+    { name: '咔咔鸟', image: '' },
+    { name: '哭哭菇', image: '' },
+    { name: '喵呜', image: '' },
+    { name: '喵喵', image: '' },
+    { name: '嗜光嗡嗡', image: '' },
+    { name: '嗜波螺', image: '' },
+    { name: '嘟嘟煲', image: '' },
+    { name: '嘟嘟锅', image: '' },
+    { name: '噼啪鸟', image: '' },
+    { name: '圆号鱼', image: '' },
+    { name: '圆眼蜘蛛', image: '' },
+    { name: '圣代甜甜', image: '' },
+    { name: '圣剑-X', image: '' },
+    { name: '圣剑侍从', image: '' },
+    { name: '圣剑骑士', image: '' },
+    { name: '圣水守护', image: '' },
+    { name: '圣羽翼王', image: '' },
+    { name: '地鼠', image: '' },
+    { name: '墨鱿士', image: '' },
+    { name: '声波缇塔', image: '' },
+    { name: '壳乙螺', image: '' },
+    { name: '多啦多', image: '' },
+    { name: '多多', image: '' },
+    { name: '多彩方方', image: '' },
+    { name: '多菇丁', image: '' },
+    { name: '多西', image: '' },
+    { name: '夜宿颅', image: '' },
+    { name: '夜枭', image: '' },
+    { name: '大头骨龙', image: '' },
+    { name: '大耳帽兜', image: '' },
+    { name: '奇丽叶', image: '' },
+    { name: '奇丽果', image: '' },
+    { name: '奇丽花', image: '' },
+    { name: '奇丽草', image: '' },
+    { name: '奇梦咪', image: '' },
+    { name: '奔乐鹿', image: '' },
+    { name: '奔波鼠', image: '' },
+    { name: '女王蜂', image: '' },
+    { name: '寂灭骨龙', image: '' },
+    { name: '寒音蛇', image: '' },
+    { name: '小勇狮', image: '' },
+    { name: '小夜', image: '' },
+    { name: '小帕尔', image: '' },
+    { name: '小怂猫', image: '' },
+    { name: '小星光', image: '' },
+    { name: '小灵菇', image: '' },
+    { name: '小灵面', image: '' },
+    { name: '小独角兽', image: '' },
+    { name: '小狮鹫', image: '' },
+    { name: '小甲虫', image: '' },
+    { name: '小电企鹅', image: '' },
+    { name: '小皮球', image: '' },
+    { name: '小箱怪', image: '' },
+    { name: '小绒茧', image: '' },
+    { name: '小翼龙', image: '' },
+    { name: '小草虫', image: '' },
+    { name: '小鹬', image: '' },
+    { name: '小黑猫', image: '' },
+    { name: '小鼠獭', image: '' },
+    { name: '尖嘴狐仙', image: '' },
+    { name: '尖角蜘蛛', image: '' },
+    { name: '岚鸟', image: '' },
+    { name: '巨噬针鼹', image: '' },
+    { name: '巨灵石', image: '' },
+    { name: '布克棱岩', image: '' },
+    { name: '布是岩', image: '' },
+    { name: '布是石', image: '' },
+    { name: '布瓜蝌', image: '' },
+    { name: '布鲁斯', image: '' },
+    { name: '帕尔萨斯', image: '' },
+    { name: '帕帕斯卡', image: '' },
+    { name: '帽兜娃娃', image: '' },
+    { name: '幻影灵菇', image: '' },
+    { name: '幻影荆棘', image: '' },
+    { name: '幻灵菇', image: '' },
+    { name: '幽冥眼', image: '' },
+    { name: '幽影树', image: '' },
+    { name: '幽星光', image: '' },
+    { name: '库多西', image: '' },
+    { name: '彩虹独角兽', image: '' },
+    { name: '彩蝶鲨', image: '' },
+    { name: '影狸', image: '' },
+    { name: '快鳍鱼', image: '' },
+    { name: '忽幽狸', image: '' },
+    { name: '怒目怂猫', image: '' },
+    { name: '怖哭菇', image: '' },
+    { name: '怖须菇', image: '' },
+    { name: '恶魔叮', image: '' },
+    { name: '恶魔狼', image: '' },
+    { name: '恶魔狼王', image: '' },
+    { name: '恶魔红钻', image: '' },
+    { name: '护主犬', image: '' },
+    { name: '抱枕松鼠', image: '' },
+    { name: '抹茶布丁', image: '' },
+    { name: '拉特', image: '' },
+    { name: '捕尘长绒', image: '' },
+    { name: '斑斑', image: '' },
+    { name: '斑枭', image: '' },
+    { name: '旋叶虫', image: '' },
+    { name: '星光狮', image: '' },
+    { name: '星尘虫', image: '' },
+    { name: '春兔', image: '' },
+    { name: '春团', image: '' },
+    { name: '春花兔', image: '' },
+    { name: '晕晕鸡', image: '' },
+    { name: '晶石蜗', image: '' },
+    { name: '暗影灵面', image: '' },
+    { name: '暮星辰', image: '' },
+    { name: '曜星光', image: '' },
+    { name: '月亮砣', image: '' },
+    { name: '月牙雪熊', image: '' },
+    { name: '朔夜伊芙', image: '' },
+    { name: '机械方方', image: '' },
+    { name: '权杖-Ⅱ', image: '' },
+    { name: '权杖-Ⅴ', image: '' },
+    { name: '松仔', image: '' },
+    { name: '松叶羊', image: '' },
+    { name: '板板壳', image: '' },
+    { name: '果冻', image: '' },
+    { name: '柴渣虫', image: '' },
+    { name: '格兰球', image: '' },
+    { name: '格兰种子', image: '' },
+    { name: '格兰花', image: '' },
+    { name: '梦悠悠', image: '' },
+    { name: '梦想三三', image: '' },
+    { name: '梦游', image: '' },
+    { name: '棋契陛下', image: '' },
+    { name: '棋棋', image: '' },
+    { name: '棋祈督', image: '' },
+    { name: '棋绮后', image: '' },
+    { name: '棋骑士', image: '' },
+    { name: '棋齐垒', image: '' },
+    { name: '椰浆布丁', image: '' },
+    { name: '武者鸡', image: '' },
+    { name: '毛头小蛛', image: '' },
+    { name: '毛毛', image: '' },
+    { name: '气球猫', image: '' },
+    { name: '水泡壳', image: '' },
+    { name: '水滴蛇', image: '' },
+    { name: '水灵', image: '' },
+    { name: '水蓝蓝', image: '' },
+    { name: '水蛇锁', image: '' },
+    { name: '治愈兔', image: '' },
+    { name: '波多西', image: '' },
+    { name: '波普鹿', image: '' },
+    { name: '波波拉', image: '' },
+    { name: '波波螺', image: '' },
+    { name: '泥吼牙', image: '' },
+    { name: '流浪鼠', image: '' },
+    { name: '海枝枝', image: '' },
+    { name: '海盔虫', image: '' },
+    { name: '海豹战士', image: '' },
+    { name: '海豹船长', image: '' },
+    { name: '消波螺', image: '' },
+    { name: '深蓝鲸', image: '' },
+    { name: '混乱鱿彩', image: '' },
+    { name: '游蛇魔使', image: '' },
+    { name: '火尾战士', image: '' },
+    { name: '火尾瓦特', image: '' },
+    { name: '火焰猿', image: '' },
+    { name: '火神', image: '' },
+    { name: '火红尾', image: '' },
+    { name: '火花', image: '' },
+    { name: '灵狐', image: '' },
+    { name: '灵羽勇士', image: '' },
+    { name: '炽心勇狮', image: '' },
+    { name: '炽热猿', image: '' },
+    { name: '炽焰狮', image: '' },
+    { name: '烈火守护', image: '' },
+    { name: '烈火战神', image: '' },
+    { name: '焰火', image: '' },
+    { name: '熔岩布丁', image: '' },
+    { name: '燃薪虫', image: '' },
+    { name: '燕尾獭', image: '' },
+    { name: '爬爬', image: '' },
+    { name: '爵士鹿', image: '' },
+    { name: '犀角鸟', image: '' },
+    { name: '獠牙猪', image: '' },
+    { name: '琉璃水母', image: '' },
+    { name: '甜田螺', image: '' },
+    { name: '电企鹅', image: '' },
+    { name: '电动长颈鹿', image: '' },
+    { name: '电咩咩', image: '' },
+    { name: '电球咩咩', image: '' },
+    { name: '画像守护', image: '' },
+    { name: '画间沉铁兽', image: '' },
+    { name: '画间法师手', image: '' },
+    { name: '疾光千兽', image: '' },
+    { name: '白发懒人', image: '' },
+    { name: '白发路路', image: '' },
+    { name: '白金独角兽', image: '' },
+    { name: '皇家狮鹫', image: '' },
+    { name: '瞌睡王', image: '' },
+    { name: '矮脚爬爬', image: '' },
+    { name: '石冠王蜥', image: '' },
+    { name: '石刺蜥', image: '' },
+    { name: '石石', image: '' },
+    { name: '石肤蜥', image: '' },
+    { name: '矿晶虫', image: '' },
+    { name: '神圣狮鹫', image: '' },
+    { name: '神谕鲨', image: '' },
+    { name: '祭礼巨像', image: '' },
+    { name: '秩序鱿墨', image: '' },
+    { name: '空空颅', image: '' },
+    { name: '窃光蚊', image: '' },
+    { name: '立方人', image: '' },
+    { name: '粉咩咩', image: '' },
+    { name: '粉星仔', image: '' },
+    { name: '粉粉星', image: '' },
+    { name: '粉耳星兔', image: '' },
+    { name: '紫夜', image: '' },
+    { name: '红丝绒', image: '' },
+    { name: '红绒十字', image: '' },
+    { name: '绅士鸡', image: '' },
+    { name: '绒仙子', image: '' },
+    { name: '绒光优优', image: '' },
+    { name: '绒绒', image: '' },
+    { name: '绿翼鸟', image: '' },
+    { name: '绿耳松鼠', image: '' },
+    { name: '缇塔', image: '' },
+    { name: '罗隐', image: '' },
+    { name: '翠顶夫人', image: '' },
+    { name: '翡翠水母', image: '' },
+    { name: '翼龙', image: '' },
+    { name: '胆小鳗鱼', image: '' },
+    { name: '脆筒甜甜', image: '' },
+    { name: '舞动路路', image: '' },
+    { name: '芋香巨角蛛', image: '' },
+    { name: '花影羚羊', image: '' },
+    { name: '花怨鳗', image: '' },
+    { name: '花衣蝶', image: '' },
+    { name: '花魁蜂后', image: '' },
+    { name: '荆棘电环', image: '' },
+    { name: '草头鸭', image: '' },
+    { name: '草衣虫', image: '' },
+    { name: '菇菇丁', image: '' },
+    { name: '菊花梨', image: '' },
+    { name: '落星虫', image: '' },
+    { name: '落陨星兔', image: '' },
+    { name: '蒲公英', image: '' },
+    { name: '蒲公英娃娃', image: '' },
+    { name: '蓝珠天鹅', image: '' },
+    { name: '蓝蝶鲨', image: '' },
+    { name: '蓬叶虫', image: '' },
+    { name: '螺旋帕帕', image: '' },
+    { name: '裘力', image: '' },
+    { name: '裘卡', image: '' },
+    { name: '裘洛', image: '' },
+    { name: '记忆石', image: '' },
+    { name: '豆丁鱼', image: '' },
+    { name: '贝加尔', image: '' },
+    { name: '贝古斯', image: '' },
+    { name: '贝瑟', image: '' },
+    { name: '贪食鼹', image: '' },
+    { name: '蹦床松鼠', image: '' },
+    { name: '蹦蹦果', image: '' },
+    { name: '蹦蹦种子', image: '' },
+    { name: '蹦蹦花', image: '' },
+    { name: '蹦蹦草', image: '' },
+    { name: '迷你乌', image: '' },
+    { name: '迷嶂布莱克', image: '' },
+    { name: '迷迷箱怪', image: '' },
+    { name: '逗逗', image: '' },
+    { name: '遁地鼠', image: '' },
+    { name: '遁鼠', image: '' },
+    { name: '鄙目鹬', image: '' },
+    { name: '酷拉', image: '' },
+    { name: '里奥', image: '' },
+    { name: '里拉鳐', image: '' },
+    { name: '针叶巡林', image: '' },
+    { name: '钻石蜗', image: '' },
+    { name: '铃兰羊', image: '' },
+    { name: '铠甲虫', image: '' },
+    { name: '锤头鹳', image: '' },
+    { name: '锥尾羊', image: '' },
+    { name: '闪电环', image: '' },
+    { name: '闪电鳗鱼', image: '' },
+    { name: '阿米亚特', image: '' },
+    { name: '阿米樱', image: '' },
+    { name: '陨星虫', image: '' },
+    { name: '雅丹鬃', image: '' },
+    { name: '雪娃娃', image: '' },
+    { name: '雪巨人', image: '' },
+    { name: '雪影冰灵', image: '' },
+    { name: '雪影娃娃', image: '' },
+    { name: '雪灵', image: '' },
+    { name: '雪绒鸟', image: '' },
+    { name: '雪蛮人', image: '' },
+    { name: '雪豆丁', image: '' },
+    { name: '雪顶布鲁斯', image: '' },
+    { name: '霜翼领主', image: '' },
+    { name: '音速犬', image: '' },
+    { name: '风暴战犬', image: '' },
+    { name: '风滚暮虫', image: '' },
+    { name: '风铃鲨', image: '' },
+    { name: '食尘短绒', image: '' },
+    { name: '香草甜甜', image: '' },
+    { name: '高脚鹬', image: '' },
+    { name: '魔力猫', image: '' },
+    { name: '魔眷鸟', image: '' },
+    { name: '魔翼鸟', image: '' },
+    { name: '魔草巫灵', image: '' },
+    { name: '鳗尾兽', image: '' },
+    { name: '鸭吉吉', image: '' },
+    { name: '鸭吉吉国王', image: '' },
+    { name: '黄蜂后', image: '' },
+    { name: '黑猫密探', image: '' },
+    { name: '黑猫巫师', image: '' },
+    { name: '黑羽夫人', image: '' },
+    { name: '龙息帕尔', image: '' },
+    { name: '龙鱼', image: '' },
+];
+
+        function normalizeSprites(rawSprites) {
+            const flattened = Array.isArray(rawSprites) ? rawSprites.flat() : [];
+            const seen = new Set();
+            return flattened
+                .filter(item => item && typeof item === 'object')
+                .map(item => ({
+                    name: String(item.name || '').trim(),
+                    image: String(item.image || '').trim()
+                }))
+                .filter(item => item.name)
+                .filter(item => {
+                    if (seen.has(item.name)) return false;
+                    seen.add(item.name);
+                    return true;
+                });
+        }
+
+        function getSpriteImagePath(name) {
+            return encodeURI(`images/${name}.png`);
+        }
+
+        function getSpriteDisplayImage(sprite) {
+            return sprite.image || getSpriteImagePath(sprite.name);
+        }
+
+        function normalizeTeamNames(team) {
+            if (!Array.isArray(team)) return [];
+            return team
+                .map(name => String(name || '').trim())
+                .filter(Boolean);
+        }
+
+        const spritePool = normalizeSprites(sprites);
+
+        let history = JSON.parse(localStorage.getItem('drawHistory') || '[]');
+        let userData = JSON.parse(localStorage.getItem('userData') || JSON.stringify({
+            name: '训练家',
+            level: 1,
+            experience: 0,
+            totalDraws: 0,
+            wins: 0,
+            losses: 0
+        }));
+
+        // 切换用户菜单
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // 点击外部关闭菜单
+        document.addEventListener('click', (e) => {
+            const userMenu = document.querySelector('.user-menu');
+            if (!userMenu.contains(e.target)) {
+                document.getElementById('userDropdown').classList.remove('show');
+            }
+        });
+
+        // 更新用户数据显示
+        function updateUserUI() {
+            document.getElementById('userName').textContent = userData.name;
+            document.getElementById('userLevel').textContent = `Lv.${userData.level} ${getRankName(userData.level)}`;
+            document.getElementById('totalDraws').textContent = userData.totalDraws;
+            
+            const total = userData.wins + userData.losses;
+            const winRate = total > 0 ? Math.round((userData.wins / total) * 100) : 0;
+            document.getElementById('winRate').textContent = `${winRate}%`;
+        }
+
+        // 获取等级称号
+        function getRankName(level) {
+            if (level < 5) return '新手训练家';
+            if (level < 10) return '初级训练家';
+            if (level < 20) return '中级训练家';
+            if (level < 30) return '高级训练家';
+            if (level < 50) return '精英训练家';
+            if (level < 70) return '王国守护者';
+            if (level < 90) return '传奇训练家';
+            return '洛克王国';
+        }
+
+        // 编辑资料
+        function editProfile() {
+            const newName = prompt('请输入你的新昵称：', userData.name);
+            if (newName && newName.trim()) {
+                userData.name = newName.trim();
+                saveUserData();
+                updateUserUI();
+                alert('昵称修改成功！');
+            }
+        }
+
+        // 导出数据
+        function exportData() {
+            const data = {
+                userData,
+                history
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `洛克配队数据_${new Date().toLocaleDateString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 导入数据
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.userData && data.history) {
+                            if (confirm('确定要导入数据吗？现有数据将会被覆盖！')) {
+                                userData = data.userData;
+                                history = data.history;
+                                saveUserData();
+                                saveHistory();
+                                updateUserUI();
+                                renderHistory();
+                                alert('数据导入成功！');
+                            }
+                        } else {
+                            alert('无效的数据文件！');
+                        }
+                    } catch (e) {
+                        alert('文件解析失败！');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // 重置数据
+        function resetData() {
+            if (confirm('确定要重置所有数据吗？历史记录和用户信息都会被清空，无法恢复！')) {
+                userData = {
+                    name: '训练家',
+                    level: 1,
+                    experience: 0,
+                    totalDraws: 0,
+                    wins: 0,
+                    losses: 0
+                };
+                history = [];
+                saveUserData();
+                saveHistory();
+                updateUserUI();
+                renderHistory();
+                document.getElementById('teamContainer').innerHTML = `
+                    <div class="empty-state">
+                        <p>点击下方按钮开始抽签~</p>
+                    </div>
+                `;
+                alert('数据已重置！');
+            }
+        }
+
+        // 退出登录（重置数据）
+        function logout() {
+            if (confirm('确定要退出登录吗？所有本地数据都会被清空！')) {
+                localStorage.removeItem('userData');
+                localStorage.removeItem('drawHistory');
+                location.reload();
+            }
+        }
+
+        // 保存用户数据
+        function saveUserData() {
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+
+        // 保存历史
+        function saveHistory() {
+            localStorage.setItem('drawHistory', JSON.stringify(history));
+        }
+
+        // 增加经验
+        function addExperience(exp) {
+            userData.experience += exp;
+            const requiredExp = userData.level * 100;
+            if (userData.experience >= requiredExp) {
+                userData.experience -= requiredExp;
+                userData.level += 1;
+                alert(`恭喜升级！现在是 Lv.${userData.level} ${getRankName(userData.level)}！`);
+            }
+            saveUserData();
+        }
+
+        // 渲染历史
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            const emptyHistory = document.getElementById('emptyHistory');
+            
+            if (!Array.isArray(history) || history.length === 0) {
+                emptyHistory.style.display = 'block';
+                historyList.innerHTML = '';
+                historyList.appendChild(emptyHistory);
+                return;
+            }
+
+            emptyHistory.style.display = 'none';
+            historyList.innerHTML = history.map((item, index) => `
+                <div class="history-item">
+                    <div class="history-time">${item?.time || '未知时间'}</div>
+                    <div class="history-sprites">
+                        ${normalizeTeamNames(item?.team).map(sprite => `<div class="history-sprite">${sprite || '未知精灵'}</div>`).join('') || '<div class="history-sprite">未知精灵</div>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 抽签
+        function drawTeam() {
+            const btn = document.getElementById('drawBtn');
+            const container = document.getElementById('teamContainer');
+            
+            if (spritePool.length === 0) {
+                alert('没有找到精灵数据哦');
+                return;
+            }
+
+            if (spritePool.length < 6) {
+                alert('精灵数据不足 6 个，无法完成抽签');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="ui-icon button-icon" aria-hidden="true">${iconSvg('draw')}</span><span>抽签中...</span>`;
+            container.innerHTML = '';
+
+            // 随机选6个不重复的精灵
+            const selected = [];
+            const temp = [...spritePool];
+            for (let i = 0; i < 6 && temp.length > 0; i++) {
+                const randomIndex = Math.floor(Math.random() * temp.length);
+                selected.push(temp[randomIndex]);
+                temp.splice(randomIndex, 1);
+            }
+
+            // 直接显示所有精灵
+            selected.forEach((sprite, i) => {
+                const card = document.createElement('div');
+                card.className = 'sprite-card';
+                card.style.animationDelay = `${i * 0.1}s`;
+                const spriteImage = getSpriteDisplayImage(sprite);
+                
+                card.innerHTML = `
+                    <div class="sprite-image">
+                        <img src="${spriteImage}" alt="${sprite.name}" onerror="this.replaceWith(createSpriteFallbackSvg())">
+                    </div>
+                    <div class="sprite-name">${sprite.name}</div>
+                    <div class="sprite-index">第 ${i+1} 位</div>
+                `;
+                
+                container.appendChild(card);
+            });
+
+            // 恢复按钮
+            btn.disabled = false;
+            btn.innerHTML = `<span class="ui-icon button-icon" aria-hidden="true">${iconSvg('draw')}</span><span>再抽一次</span>`;
+
+            // 更新用户数据
+            userData.totalDraws += 1;
+            addExperience(10); // 每次抽签加10经验
+            saveUserData();
+            updateUserUI();
+
+            // 保存到历史
+            const now = new Date();
+            const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            history.unshift({
+                time: timeStr,
+                team: selected.map(s => s?.name || '未知精灵')
+            });
+
+            // 最多保留20条历史
+            if (history.length > 20) {
+                history = history.slice(0, 20);
+            }
+
+            saveHistory();
+            renderHistory();
+
+            btn.disabled = false;
+            btn.innerHTML = `<span class="ui-icon button-icon" aria-hidden="true">${iconSvg('draw')}</span><span>再抽一次</span>`;
+        }
+
+        // 清空历史
+        function clearHistory() {
+            if (confirm('确定要清空所有抽签历史吗？')) {
+                history = [];
+                localStorage.removeItem('drawHistory');
+                renderHistory();
+            }
+        }
+
+        // 初始化
+        updateUserUI();
+        renderHistory();
+
+        function createSpriteFallbackSvg() {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = `
+                <svg viewBox="0 0 64 64" width="48" height="48" aria-hidden="true" focusable="false">
+                    <rect x="10" y="8" width="44" height="48" rx="10" fill="#e9ecef"></rect>
+                    <path d="M22 40c4-6 16-6 20 0" fill="none" stroke="#9aa3af" stroke-width="3" stroke-linecap="round"></path>
+                    <circle cx="26" cy="26" r="7" fill="#9aa3af"></circle>
+                </svg>
+            `;
+            return wrapper.firstElementChild;
+        }
+
+        function iconSvg(name) {
+            const icons = {
+                user: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"></circle><path d="M4 20c1.8-4.5 14.2-4.5 16 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
+                gamepad: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9h10a5 5 0 0 1 5 5v1.5a3.5 3.5 0 0 1-6.8 1.1l-.5-1.6H9.3l-.5 1.6A3.5 3.5 0 0 1 2 15.5V14a5 5 0 0 1 5-5Z" fill="currentColor"></path><path d="M8 12v3M6.5 13.5h3M16 11h0M18 13h0" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg>',
+                edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17.8V20h2.2l10.7-10.7-2.2-2.2L4 17.8Zm15.7-9.5a1 1 0 0 0 0-1.4l-2.6-2.6a1 1 0 0 0-1.4 0l-1.4 1.4 4 4 1.4-1.4Z" fill="currentColor"></path></svg>',
+                export: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9m0-9 4 4m-4-4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M5 14v5h14v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
+                import: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V12m0 9-4-4m4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M5 10V5h14v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
+                reset: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12a6 6 0 1 1 2 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="M6 12H3m3 0-2-2m2 2-2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
+                logout: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 7V5h9v14h-9v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13 12H4m0 0 3-3m-3 3 3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
+                title: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7l-3 3v-3a3 3 0 0 1-0-0V8Z" fill="currentColor"></path><path d="M8 10h8M8 13h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg>',
+                draw: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h5l2 3h9v11H4V5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M8 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
+                history: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M20 12a8 8 0 1 1-2.4-5.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>'
+            };
+            return icons[name] || '';
+        }
+
+        document.getElementById('userAvatar').innerHTML = `<span class="ui-icon" aria-hidden="true">${iconSvg('user')}</span>`;
+        document.querySelector('.user-avatar-large').innerHTML = `<span class="ui-icon" aria-hidden="true">${iconSvg('gamepad')}</span>`;
+        document.querySelector('.menu-list .menu-item[onclick="editProfile()"]').innerHTML = `<span class="ui-icon menu-icon" aria-hidden="true">${iconSvg('edit')}</span><span>编辑资料</span>`;
+        document.querySelector('.menu-list .menu-item[onclick="exportData()"]').innerHTML = `<span class="ui-icon menu-icon" aria-hidden="true">${iconSvg('export')}</span><span>导出数据</span>`;
+        document.querySelector('.menu-list .menu-item[onclick="importData()"]').innerHTML = `<span class="ui-icon menu-icon" aria-hidden="true">${iconSvg('import')}</span><span>导入数据</span>`;
+        document.querySelector('.menu-list .menu-item[onclick="resetData()"]').innerHTML = `<span class="ui-icon menu-icon" aria-hidden="true">${iconSvg('reset')}</span><span>重置所有数据</span>`;
+        document.querySelector('.menu-list .menu-item.logout').innerHTML = `<span class="ui-icon menu-icon" aria-hidden="true">${iconSvg('logout')}</span><span>退出登录</span>`;
+        document.querySelector('.header-content h1').innerHTML = `<span class="ui-icon title-icon" aria-hidden="true">${iconSvg('title')}</span>洛克王国随机配队抽签`;
+        document.querySelector('.draw-btn').innerHTML = `<span class="ui-icon button-icon" aria-hidden="true">${iconSvg('draw')}</span><span>开始抽签</span>`;
+        document.querySelector('.history-title span').innerHTML = `<span class="ui-icon history-icon" aria-hidden="true">${iconSvg('history')}</span>抽签历史`;
+    </script>
+</body>
+</html>
