@@ -18,6 +18,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rojim666.github.io
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,7 +29,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Install dependencies
         run: npm install
@@ -35,7 +37,7 @@ jobs:
         run: npm run build
 
       - name: Disable Jekyll
-        run: New-Item -ItemType File -Path public/.nojekyll -Force | Out-Null
+        run: touch public/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -43,7 +45,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public
+          path: rojim666.github.io/public
 
   deploy:
     environment:
