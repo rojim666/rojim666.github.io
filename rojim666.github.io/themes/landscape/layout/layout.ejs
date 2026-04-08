@@ -16,21 +16,54 @@
 
         body {
             font-family: 'Microsoft YaHei', sans-serif;
-            background: #f5f7fa;
+            background: linear-gradient(180deg, #f3e6d4 0%, #efe0cc 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .page-banner {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            background: #e7d7bf;
+        }
+
+        .page-banner__image {
+            position: absolute;
+            inset: 0;
+            background-image: url('images/season-banner.png');
+            background-position: center top;
+            background-size: cover;
+            background-repeat: no-repeat;
+            filter: none;
+            transform: none;
+            opacity: 1;
+        }
+
+        .page-banner__overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 50%, rgba(239,224,204,0.88) 100%);
         }
 
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin: -92px auto 40px;
+            padding: 28px 24px 30px;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 28px;
+            box-shadow: 0 16px 40px rgba(97, 73, 42, 0.12);
             color: #333;
             position: relative;
+            z-index: 2;
+            backdrop-filter: blur(8px);
         }
 
         .header-content {
@@ -38,23 +71,31 @@
         }
 
         h1 {
-            font-size: 3rem;
+            font-size: 2.55rem;
             font-weight: bold;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #333 0%, #666 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #2d2a27;
+            background: none;
+            -webkit-background-clip: border-box;
+            background-clip: border-box;
+            -webkit-text-fill-color: initial;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .subtitle {
             font-size: 1.2rem;
-            color: #666;
+            color: #6b6259;
         }
 
         .user-menu {
             position: absolute;
             top: 0;
             right: 0;
+            z-index: 3;
         }
 
         .user-avatar {
@@ -177,6 +218,18 @@
             color: white;
         }
 
+        .title-logo {
+            display: inline-block;
+            height: 1.55em;
+            width: auto;
+            vertical-align: -0.18em;
+            filter: brightness(0) saturate(100%);
+        }
+
+        .title-text {
+            display: inline-block;
+        }
+
         .user-name {
             font-size: 1.1rem;
             font-weight: bold;
@@ -265,6 +318,8 @@
             transition: all 0.3s ease;
             animation: fadeIn 0.5s ease forwards;
             opacity: 0;
+            position: relative;
+            z-index: 1;
         }
 
         .sprite-card:hover {
@@ -562,6 +617,11 @@
     </style>
 </head>
 <body>
+    <div class="page-banner" aria-hidden="true">
+        <div class="page-banner__image"></div>
+        <div class="page-banner__overlay"></div>
+    </div>
+
     <div class="container">
         <header>
             <div class="user-menu">
@@ -611,7 +671,7 @@
                 </div>
             </div>
             <div class="header-content">
-                <h1><span class="ui-icon title-icon" aria-hidden="true">%TITLE_ICON%</span>洛克王国随机配队抽签</h1>
+                <h1><img class="title-logo" src="images/logo_rocom.png" alt="洛克王国"><span class="title-text">随机配队抽签</span></h1>
                 <p class="subtitle">点击下方按钮，随机抽取6只精灵组成你的战斗队伍！</p>
             </div>
         </header>
@@ -1346,7 +1406,6 @@
                 import: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V12m0 9-4-4m4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M5 10V5h14v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
                 reset: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12a6 6 0 1 1 2 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="M6 12H3m3 0-2-2m2 2-2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
                 logout: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 7V5h9v14h-9v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13 12H4m0 0 3-3m-3 3 3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
-                title: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H7l-3 3v-3a3 3 0 0 1-0-0V8Z" fill="currentColor"></path><path d="M8 10h8M8 13h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg>',
                 draw: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h5l2 3h9v11H4V5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M8 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
                 history: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M20 12a8 8 0 1 1-2.4-5.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>'
             };
@@ -1360,7 +1419,7 @@
         document.querySelector('.menu-list .menu-item[onclick="importData()"]').innerHTML = `<span class="ui-icon menu-icon" aria-hidden="true">${iconSvg('import')}</span><span>导入数据</span>`;
         document.querySelector('.menu-list .menu-item[onclick="resetData()"]').innerHTML = `<span class="ui-icon menu-icon" aria-hidden="true">${iconSvg('reset')}</span><span>重置所有数据</span>`;
         document.querySelector('.menu-list .menu-item.logout').innerHTML = `<span class="ui-icon menu-icon" aria-hidden="true">${iconSvg('logout')}</span><span>退出登录</span>`;
-        document.querySelector('.header-content h1').innerHTML = `<span class="ui-icon title-icon" aria-hidden="true">${iconSvg('title')}</span>洛克王国随机配队抽签`;
+        document.querySelector('.header-content h1').innerHTML = `<img class="title-logo" src="images/logo_rocom.png" alt="洛克王国"><span class="title-text">随机配队抽签</span>`;
         document.querySelector('.draw-btn').innerHTML = `<span class="ui-icon button-icon" aria-hidden="true">${iconSvg('draw')}</span><span>开始抽签</span>`;
         document.querySelector('.history-title span').innerHTML = `<span class="ui-icon history-icon" aria-hidden="true">${iconSvg('history')}</span>抽签历史`;
     </script>
